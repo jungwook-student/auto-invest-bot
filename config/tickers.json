@@ -1,0 +1,7 @@
+{
+  "tickers": [
+    { "name": "삼성전자", "keyword": "삼성전자" },
+    { "name": "SK스퀘어", "keyword": "SK스퀘어" },
+    { "name": "CJ ENM", "keyword": "CJ ENM" }
+  ]
+}
