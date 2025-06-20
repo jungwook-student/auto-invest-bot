@@ -20,12 +20,12 @@ def main():
         news = get_news(item["keyword"])
         print(f"[{item['name']}] 뉴스 크롤링 결과:")
         for n in news:
-            print(f"  - {n['title']}")
+            print(f"  - [{n['source']}] {n['title']}")
         sentiment = analyze_titles(news)
         decision = "🔼 매수" if sentiment["positive"] >= 3 else "⏸ 관망"
-        encoded_keyword = urllib.parse.quote(item["keyword"])
-        news_url = f"https://news.google.com/rss/search?q={encoded_keyword}+when:1d&hl=ko&gl=KR&ceid=KR:ko"
-        full_message += f"✅ <{news_url}|{item['name']}> — {decision}\n"
+        full_message += f"✅ {item['name']} — {decision}\n"
+        for i, n in enumerate(news):
+            full_message += f"• 출처{i+1} ({n['source']}): <{n['url']}|{n['title'][:30]}...>\n"
         full_message += f"긍정: {sentiment['positive']} / 부정: {sentiment['negative']}\n\n"
     send_slack_message(full_message)
 
