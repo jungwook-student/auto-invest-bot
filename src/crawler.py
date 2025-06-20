@@ -5,18 +5,25 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import feedparser
 from urllib.parse import quote
-from urllib.request import Request, urlopen
-import ssl
+import requests
+import xml.etree.ElementTree as ET
+
+def get_yna_news(max_articles=10):
+    url = "https://www.yna.co.kr/rss/economy.xml"
+    response = requests.get(url)
+    articles = []
+    if response.status_code == 200:
+        root = ET.fromstring(response.content)
+        for item in root.findall(".//item")[:max_articles]:
+            title = item.find("title").text
+            link = item.find("link").text
+            articles.append({"title": title, "url": link})
+    return articles
 
 def get_news(keyword: str, max_articles=10):
     encoded_keyword = quote(keyword)
     url = f"https://news.google.com/rss/search?q={encoded_keyword}+when:1d&hl=ko&gl=KR&ceid=KR:ko"
-
-    context = ssl._create_unverified_context()
-    req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urlopen(req, context=context) as response:
-        data = response.read()
-
-    feed = feedparser.parse(data)
-    print(f"[{keyword}] RSS 피드 수신: {len(feed.entries)}건")
-    return [{"title": entry.title, "url": entry.link} for entry in feed.entries[:max_articles]]
+    feed = feedparser.parse(url)
+    google_articles = [{"title": entry.title, "url": entry.link, "source": "Google"} for entry in feed.entries[:max_articles]]
+    yna_articles = [{"title": item["title"], "url": item["url"], "source": "연합뉴스"} for item in get_yna_news(max_articles)]
+    return google_articles + yna_articles
